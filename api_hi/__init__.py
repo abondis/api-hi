@@ -79,8 +79,8 @@ class Apify(object):
         """Select all from model"""
         return self.delete(id)
 
-from api_hi_helpers import PeeweeHelper
-from api_hi_helpers import BottleHelper
+from api_hi.helpers import PeeweeHelper
+from api_hi.helpers import BottleHelper
 # module, model, helper
 db_helpers = [
     {'module': 'peewee',

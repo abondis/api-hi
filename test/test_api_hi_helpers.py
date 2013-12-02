@@ -1,5 +1,5 @@
 import unittest as u
-from api_hi_helpers import PeeweeHelper
+from api_hi.helpers import PeeweeHelper
 
 from peewee import Model, SqliteDatabase, CharField, ForeignKeyField
 
@@ -108,7 +108,7 @@ class TestPeeweeHelper(u.TestCase):
         exp = entry
         exp['id'] = 4
         self.assertEquals(exp, result)
-from api_hi_helpers import BottleHelper
+from api_hi.helpers import BottleHelper
 from bottle import Bottle
 
 app = Bottle()

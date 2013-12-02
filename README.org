@@ -1,3 +1,18 @@
 * api-hi
 
 A lib to api-fy things (ORMs) using some other things (web frameworks)
+
+In the end it should not be tied to one specific ORM or framework.
+It is not made for complicated APIs, only two 'levels' on the API:
+/ and /<id>
+If there is any relation to go through, we can iterate over their ID
+and query the right API path
+
+use a decorator from an authentication library (ie: bottle-cork)
+
+to map the GET to the url '/map/to' and '/map/to/<id>'
+#+BEGIN_SRC python
+api_hi('/map/to', someModel, someWebApp, methods=['GET'], auth=authDecorator)
+#+END_SRC
+
+More details to come
