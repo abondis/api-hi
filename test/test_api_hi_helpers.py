@@ -25,20 +25,28 @@ class DBFK(BaseModel):
     relate_to = ForeignKeyField(DBRel, related_name='relaters')
 
 
-SimpleDB.create_table()
-DBRel.create_table()
-DBFK.create_table()
+def setup_db():
+    SimpleDB.create_table()
+    DBRel.create_table()
+    DBFK.create_table()
 
-datas = [
-    {'content': u'entry1'},
-    {'content': u'entry2'},
-    {'content': u'entry3'},
-]
+    datas = [
+        {'content': u'entry1'},
+        {'content': u'entry2'},
+        {'content': u'entry3'},
+    ]
 
-for d in datas:
-    SimpleDB.create(**d)
-    DBRel.create(**d)
-    DBFK.create(relate_to=1)
+    for d in datas:
+        SimpleDB.create(**d)
+        DBRel.create(**d)
+        DBFK.create(relate_to=1)
+
+
+def teardown_db():
+    SimpleDB.drop_table()
+    DBRel.drop_table()
+    DBFK.drop_table()
+    
 
 model = SimpleDB
 
@@ -46,9 +54,13 @@ model = SimpleDB
 class TestPeeweeHelper(u.TestCase):
     """Feature: we got helpers to do simple sqla queries"""
     def setUp(self):
+        setup_db()
         self.simple = PeeweeHelper(SimpleDB)
         self.fk = PeeweeHelper(DBFK)
         self.rel = PeeweeHelper(DBRel)
+
+    def tearDown(self):
+        teardown_db()
 
     def test_get_columns(self):
         """Scenario: get the columns of the model"""
@@ -108,6 +120,21 @@ class TestPeeweeHelper(u.TestCase):
         exp = entry
         exp['id'] = 4
         self.assertEquals(exp, result)
+
+    def test_update(self):
+        """We update an entry"""
+        entry = {'content': u'entry4'}
+        result = self.rel.update(1, **entry)
+        exp = entry
+        exp['id'] = 1
+        self.assertEquals(exp, result)
+
+    def test_delete(self):
+        """We delete an entry"""
+        self.rel.delete(1)
+        entries = self.rel.model.select()
+        self.assertEquals(None, self.rel.where(entries, 1)['result'])
+
 from api_hi.helpers import BottleHelper
 from bottle import Bottle
 

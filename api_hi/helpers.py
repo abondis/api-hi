@@ -53,9 +53,11 @@ class PeeweeHelper:
     def where(self, query, id, select=None):
         """Return the datas for a specific ID given select options"""
         result = query.where(self.model.id == id).first()
-        rels = self.get_relations(result, select)
-        result = result._data
-        result.update(rels)
+        rels = []
+        if result is not None:
+            rels = self.get_relations(result, select)
+            result = result._data
+            result.update(rels)
         return {'result': result}
 
     def all(self, query, select=None):
@@ -74,6 +76,16 @@ class PeeweeHelper:
         new.save()
         return(new._data)
 
+    def update(self, id, **kwargs):
+        """Update an entry"""
+        entry = self.model.get(self.model.id == id)
+        entry.update(**kwargs).execute()
+        entry = self.model.get(self.model.id == id)
+        return(entry._data)
+
+    def delete(self, id):
+        """Delete an entry"""
+        self.model.delete().where(self.model.id == id).execute()
 
 from bottle import request
 
