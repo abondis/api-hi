@@ -1,18 +1,76 @@
 * api-hi
 
-A lib to api-fy things (ORMs) using some other things (web frameworks)
+A lib to api-fy things (ORMs models) using some other things (web frameworks)
 
 In the end it should not be tied to one specific ORM or framework.
+
 It is not made for complicated APIs, only two 'levels' on the API:
-/ and /<id>
+- / and /<id>
+
 If there is any relation to go through, we can iterate over their ID
 and query the right API path
 
 use a decorator from an authentication library (ie: bottle-cork)
 
-to map the GET to the url '/map/to' and '/map/to/<id>'
-#+BEGIN_SRC python
-api_hi('/map/to', someModel, someWebApp, methods=['GET'], auth=authDecorator)
-#+END_SRC
+More to come:
+- PUT, DELETE
+- Flask, SQLAlchemy
+- Documentation
 
-More details to come
+Hopefully?:
+- Mongo, Riak
+- Ansible?
+- IMAP?
+
+** Install
+   #+BEGIN_SRC sh
+     pip install -e https://github.com/abondis/api-hi/archive/master.zip
+   #+END_SRC
+
+** Example
+*** Setup models using the desired (supported) ORM
+    for example peewee (more coming)
+    #+BEGIN_SRC python
+      class Post(Model):
+          #put fields
+          pass
+      
+      class File(Model):
+          #put fields
+          #and foreign key to Post id
+          pass
+    #+END_SRC
+  
+*** Setup the authentication decorator
+    for example bottle-cork
+    #+BEGIN_SRC python
+      aaa = Cork('auth_files')
+      api_auth = aaa.make_auth_decorator(
+          fail_redirect="/login", role="read")
+    #+END_SRC
+
+*** Setup a web framework app
+    #+BEGIN_SRC python
+      app = bottle.default_app()
+    #+END_SRC
+
+*** Api-fy the model
+     - GET is the default method allowed
+     - pass the decorator the same way it would be used on a routed function
+     - Post and File are just the class
+     - app is an instance of the web application
+
+**** Get a list of posts
+     #+BEGIN_SRC python
+       apify('/api/posts', Post, app, auth=api_auth())
+     #+END_SRC
+**** Get a list of files
+     #+BEGIN_SRC python
+       apify('/api/files', File, app, auth=api_auth())
+     #+END_SRC
+**** Create a post
+     - allow POST method to an 'admin'
+     - this will only map to `/api/posts` since it is only used to create an item
+     #+BEGIN_SRC python
+       apify('/api/posts', Post, app, methods=['POST'], auth=api_auth('admin'))
+     #+END_SRC
