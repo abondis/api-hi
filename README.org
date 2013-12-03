@@ -62,15 +62,15 @@ Hopefully?:
 
 **** Get a list of posts
      #+BEGIN_SRC python
-       apify('/api/posts', Post, app, auth=api_auth())
+       api_hi('/api/posts', Post, app, auth=api_auth())
      #+END_SRC
 **** Get a list of files
      #+BEGIN_SRC python
-       apify('/api/files', File, app, auth=api_auth())
+       api_hi('/api/files', File, app, auth=api_auth())
      #+END_SRC
 **** Create a post
      - allow POST method to an 'admin'
      - this will only map to `/api/posts` since it is only used to create an item
      #+BEGIN_SRC python
-       apify('/api/posts', Post, app, methods=['POST'], auth=api_auth('admin'))
+       api_hi('/api/posts', Post, app, methods=['POST'], auth=api_auth('admin'))
      #+END_SRC
