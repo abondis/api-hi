@@ -28,6 +28,7 @@ class Apify(object):
         {'method': 'GET', 'function': 'get', 'map': ['', '/<id>']},
         {'method': 'POST', 'function': 'post', 'map': ['']},
         {'method': 'DELETE', 'function': 'delete', 'map': ['/<id>']},
+        {'method': 'PUT', 'function': 'put', 'map': ['/<id>']},
     ]
 
     def __init__(self, path, model, app, methods=['GET'], auth=None):
@@ -76,8 +77,13 @@ class Apify(object):
         return self.add(**datas)
 
     def delete(self, id):
-        """Select all from model"""
+        """Delete something"""
         return self.delete(id)
+
+    def update(self, id):
+        """Update an entry"""
+        datas = self.request()
+        return self.update(id, **datas)
 
 from api_hi.helpers import PeeweeHelper
 from api_hi.helpers import BottleHelper

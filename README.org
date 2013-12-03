@@ -12,9 +12,11 @@ and query the right API path
 
 use a decorator from an authentication library (ie: bottle-cork)
 
+
 More to come:
 - PUT, DELETE
 - Flask, SQLAlchemy
+- simpler helper using models inheritance (depends on what's allready done)?
 - Documentation
 
 Hopefully?:
