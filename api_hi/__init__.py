@@ -80,7 +80,7 @@ class Apify(object):
         """Delete something"""
         return self.delete(id)
 
-    def update(self, id):
+    def put(self, id):
         """Update an entry"""
         datas = self.request()
         return self.update(id, **datas)
