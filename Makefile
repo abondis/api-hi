@@ -1,2 +1,2 @@
 tests:
-	py.test --cov api_hi -v
+	py.test --cov api_hi --cov-report term-missing -v

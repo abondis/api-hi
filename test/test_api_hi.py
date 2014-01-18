@@ -1,62 +1,10 @@
 import unittest as u
 
-
-# Fake test objects
-## Peewee specific
-from peewee import Model, SqliteDatabase, CharField, ForeignKeyField
-
-database = SqliteDatabase(':memory:')
-
-
-class BaseModel(Model):
-    class Meta:
-        database = database
-
-
-class SimpleDB(BaseModel):
-    content = CharField()
-
-
-class DBRel(BaseModel):
-    """A DB related to"""
-    content = CharField()
-
-
-class DBFK(BaseModel):
-    """A DB with foreign keys"""
-    relate_to = ForeignKeyField(DBRel, related_name='relaters')
-
-
-SimpleDB.create_table()
-DBRel.create_table()
-DBFK.create_table()
-
-datas = [
-    {'content': u'entry1'},
-    {'content': u'entry2'},
-    {'content': u'entry3'},
-]
-
-for d in datas:
-    SimpleDB.create(**d)
-    DBRel.create(**d)
-    DBFK.create(relate_to=1)
-
-model = SimpleDB
-import bottle
-app = bottle.Bottle
-
-
-def auth_decorator(arg):
-    def real_decorator(function):
-        def wrapper(*args, **kwargs):
-            if arg is False:
-                raise Exception
-            return function(*args, **kwargs)
-        return wrapper
-    return real_decorator
-
-### End Fake objects
+from fakes import PeeweeSimpleDB, PeeweeDBRel, PeeweeDBFK
+from fakes import setup_peewee_db, teardown_peewee_db
+from fakes import SQLASimpleDB, SQLADBRel, SQLADBFK
+from fakes import setup_sqla_db, teardown_sqla_db
+from fakes import bottleapp, bottle_auth_decorator
 
 """
 Feature: Basic REST API over Model
@@ -73,23 +21,33 @@ from api_hi import api_hi
 class MapBasicAPIToModel(u.TestCase):
     """ Feature: Basic REST API over Model
     """
+    webapp = None
+    webauth = None
+    db_setup = None
+    db_teardown = None
+
     def setUp(self):
         """ Given a Model
         and a web app
         and a path
         and a GET method
         """
+        self.db_setup.im_func()
+        self.app = self.webapp()
+        self.check = self.webapp()
+        #trick: we want the function to stay unbound and not get self...
+        self.auth = self.webauth.im_func
         self.datas = [
             {'id': 1, 'content': u'entry1'},
             {'id': 2, 'content': u'entry2'},
             {'id': 3, 'content': u'entry3'},
         ]
-        self.app = app()
-        self.check = app()
-        self.auth = auth_decorator
         self.path = '/api/test'
         self.api = api_hi(
-            self.path, self.dbrel, self.app, ['GET'], self.auth(True))
+            self.path, self.dbrel, self.app, ['GET'], self.auth)
+
+    def tearDown(self):
+        self.db_teardown.im_func()
 
     def test_0_api_hi(self):
         """ Scenario: Map a get URL to a Model
@@ -107,10 +65,24 @@ class MapBasicAPIToModel(u.TestCase):
     #it is already tested from the helpers side
 
 
-TestAPIPeewee = type('MapBasicAPIToPeeweeModel',
-                     (MapBasicAPIToModel,), dict(
-                         simpledb=SimpleDB,
-                         dbrel=DBRel,
-                         dbfk=DBFK))
+TestBottleAPIPeewee = type('MapBasicAPIToPeeweeModel',
+                           (MapBasicAPIToModel,), dict(
+                               simpledb=PeeweeSimpleDB,
+                               dbrel=PeeweeDBRel,
+                               dbfk=PeeweeDBFK,
+                               db_setup=setup_peewee_db,
+                               db_teardown=teardown_peewee_db,
+                               webapp=bottleapp,
+                               webauth=bottle_auth_decorator(True),))
+
+TestBottleAPISQLA = type('MapBasicAPIToSQLAModel',
+                         (MapBasicAPIToModel,), dict(
+                             simpledb=SQLASimpleDB,
+                             dbrel=SQLADBRel,
+                             dbfk=SQLADBFK,
+                             db_setup=setup_sqla_db,
+                             db_teardown=teardown_sqla_db,
+                             webapp=bottleapp,
+                             webauth=bottle_auth_decorator(True),))
 
 del MapBasicAPIToModel

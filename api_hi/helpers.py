@@ -1,4 +1,4 @@
-class SqlaHelper:
+class SQLAHelper:
     """map Apify methods to sqlalchemy queries
     and other helpers"""
 
