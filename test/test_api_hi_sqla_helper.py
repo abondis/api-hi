@@ -3,6 +3,7 @@ from api_hi.helpers import SQLAHelper
 
 from fakes import SQLASimpleDB, SQLADBRel, SQLADBFK
 from fakes import setup_sqla_db, teardown_sqla_db
+from fakes import dic_in_dic
 
 
 class TestSQLAHelper(u.TestCase):
@@ -19,7 +20,9 @@ class TestSQLAHelper(u.TestCase):
     def test_get_columns(self):
         """Scenario: get the columns of the model"""
         rel_cols = set(
-            [SQLADBRel.relaters, SQLADBRel.content, SQLADBRel.id])
+            [SQLADBRel.relaters,
+             SQLADBRel.content,
+             SQLADBRel.id, ])
         self.assertEquals(rel_cols, self.rel.columns())
 
     def test_get_filtered_columns(self):
@@ -29,14 +32,14 @@ class TestSQLAHelper(u.TestCase):
 
     def test_get_relations(self):
         """Get relations from an entry"""
-        entry = SQLADBRel.select().first()
+        entry = SQLADBRel.query.first()
         rels = {'relaters': [x.id for x in entry.relaters]}
         result = self.rel.get_relations(entry)
         self.assertEquals(rels, result)
 
     def test_get_filtered_relations(self):
         """Get relations from an entry"""
-        entry = SQLADBRel.select(SQLADBRel.id).first()
+        entry = SQLADBRel.query.first()
         rels = {}
         result = self.rel.get_relations(entry, ['id'])
         self.assertEquals(rels, result)
@@ -44,29 +47,32 @@ class TestSQLAHelper(u.TestCase):
     def test_select(self):
         """Scenario: we get a list of simple entries
         ie: table with one primary key, and no references"""
-        entries = SQLADBRel.select()
+        entries = SQLADBRel.query.all()
         result = self.rel.select()
         self.assertEquals(entries, result)
 
     def test_where(self):
         """We want specific ID details"""
-        entries = SQLADBRel.select()
-        entry = entries.first()._data
+        entries = SQLADBRel.query
+        entry = entries.first().__dict__
         entry['relaters'] = [1, 2, 3]
         result = self.rel.where(entries, 1)
-        self.assertEquals(entry, result['result'])
+        issubset = dic_in_dic(result['result'], entry)
+        self.assertTrue(issubset)
 
     def test_all(self):
         """We want all the entries"""
-        entries = SQLADBRel.select()
-        entry = list(entries.dicts())
+        entries = SQLADBRel.query
+        entry = list([e.__dict__ for e in entries.all()])
         first = entry[0]
         first['relaters'] = [1, 2, 3]
         second = entry[1]
         second['relaters'] = []
         result = self.rel.all(entries)
-        self.assertEquals(first, result['result'][0])
-        self.assertEquals(second, result['result'][1])
+        issubset = dic_in_dic(result['result'][0], first)
+        self.assertTrue(issubset)
+        issubset = dic_in_dic(result['result'][1], second)
+        self.assertTrue(issubset)
 
     def test_add(self):
         """We add an entry"""
@@ -74,7 +80,7 @@ class TestSQLAHelper(u.TestCase):
         result = self.rel.add(**entry)
         exp = entry
         exp['id'] = 4
-        self.assertEquals(exp, result)
+        self.assertEquals(exp['content'], result['content'])
 
     def test_update(self):
         """We update an entry"""
@@ -87,5 +93,6 @@ class TestSQLAHelper(u.TestCase):
     def test_delete(self):
         """We delete an entry"""
         self.rel.delete(1)
-        entries = self.rel.model.select()
-        self.assertEquals(None, self.rel.where(entries, 1)['result'])
+        entries = self.rel.model.query.all()
+        self.assertIn(2, [e.id for e in entries])
+        self.assertNotIn(1, [e.id for e in entries])

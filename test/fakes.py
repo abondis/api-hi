@@ -82,7 +82,7 @@ Base.s = sqladb_session
 # select([someModel.myColumns]).execute()
 
 from sqlalchemy import Column, Integer, String, ForeignKey
-#from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship
 
 
 class SQLASimpleDB(Base):
@@ -97,14 +97,17 @@ class SQLADBRel(Base):
 
     id = Column(Integer, primary_key=True)
     content = Column(String)
+    relaters = relationship(
+        "SQLADBFK",
+        backref='relate_to',
+        cascade="all, delete, delete-orphan")
 
 
 class SQLADBFK(Base):
     __tablename__ = 'sqladbfk'
 
     id = Column(Integer, primary_key=True)
-    relate_to = Column(Integer, ForeignKey("sqladbrel.id"), nullable=False)
-    #relate_to = relationship("SqlaDBRel", backref='relaters')
+    relate_to_id = Column(Integer, ForeignKey("sqladbrel.id"), nullable=False)
 
 
 def setup_sqla_db():
@@ -112,11 +115,20 @@ def setup_sqla_db():
 
     for d in datas:
         SQLASimpleDB.s.add(SQLASimpleDB(**d))
+        SQLASimpleDB.s.flush()
         SQLADBRel.s.add(SQLADBRel(**d))
-        SQLADBFK.s.add(SQLADBFK(relate_to=1))
+        SQLADBRel.s.flush()
+        SQLADBFK.s.add(SQLADBFK(relate_to_id=1))
+        SQLADBFK.s.flush()
 
 
 def teardown_sqla_db():
-    Base.metadata.drop_tables()
+    Base.metadata.drop_all(bind=engine)
 
 sqlamodel = SQLASimpleDB
+
+
+def dic_in_dic(d1, d2):
+    return all(
+        (k in d2 and d2[k] == v)
+        for k, v in d1.iteritems())

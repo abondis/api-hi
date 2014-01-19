@@ -86,12 +86,17 @@ class Apify(object):
         return self.update(id, **datas)
 
 from api_hi.helpers import PeeweeHelper
+from api_hi.helpers import SQLAHelper
 from api_hi.helpers import BottleHelper
 # module, model, helper
+# SQLA models should inherit from base
 db_helpers = [
     {'module': 'peewee',
      'class': 'Model',
-     'helper': PeeweeHelper}]
+     'helper': PeeweeHelper},
+    {'module': 'sqlalchemy.ext.declarative.api',
+     'class': 'DeclarativeMeta',
+     'helper': SQLAHelper}]
 web_helpers = [
     {'module': 'bottle',
      'class': 'Bottle',
@@ -106,7 +111,8 @@ def get_helper(obj, helpers):
         if h['module'] in sys.modules:
             module = sys.modules[h['module']]
             cls = getattr(module, h['class'])
-            if issubclass(obj, cls):
+            if isinstance(obj, cls) or \
+                    issubclass(obj, cls):
                 helper = h['helper']
     if helper is None:
         raise(Exception, "This type of helper is not implemented yet %s"

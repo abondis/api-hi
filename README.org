@@ -23,6 +23,8 @@ Hopefully?:
 - Mongo, Riak
 - Ansible?
 - IMAP?
+- YAML?
+- org-mode?
 
 ** Install
    #+BEGIN_SRC sh
