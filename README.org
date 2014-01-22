@@ -13,13 +13,16 @@ and query the right API path
 use a decorator from an authentication library (ie: bottle-cork)
 
 
-More to come:
-- PUT, DELETE
-- Flask, SQLAlchemy
+** What works
+- create an api matching /<model> /<model>/<id> (GET/POST/PUT/DELETE) 
+  using bottle and sqlalchemy/peewee models
+
+** What is coming
+- Flask
 - simpler helper using models inheritance (depends on what's allready done)?
 - Documentation
 
-Hopefully?:
+** What would be awesome
 - Mongo, Riak
 - Ansible?
 - IMAP?
