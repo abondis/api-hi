@@ -132,3 +132,14 @@ def dic_in_dic(d1, d2):
     return all(
         (k in d2 and d2[k] == v)
         for k, v in d1.iteritems())
+
+
+YamlDB = object()
+
+
+def setup_yaml_db():
+    pass
+
+
+def teardown_yaml_db():
+    pass
